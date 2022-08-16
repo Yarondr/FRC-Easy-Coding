@@ -26,25 +26,3 @@ def text_edit_right_alignment(text_edit: QTextEdit):
     # scrollerbar alighment to left
     text_edit.setLayoutDirection(Qt.RightToLeft)
     
-def create_status_bar():
-    # status bar
-    layout = QHBoxLayout()
-    layout.setContentsMargins(10, 10, 74, 10)
-    
-    # settings button
-    settings_button = QPushButton()
-    settings_button.setIcon(QIcon("icons/settings.png"))
-    settings_button.setIconSize(QSize(64, 64))
-    settings_button.setFixedSize(64, 64)
-    # disable button border
-    settings_button.setStyleSheet("border: none")
-    
-    # status text
-    status_text = QLabel()
-    set_label_design(status_text)
-    status_text.setStyleSheet("color: red;")
-    
-    layout.addWidget(settings_button)
-    layout.addWidget(status_text)
-    return layout
-    

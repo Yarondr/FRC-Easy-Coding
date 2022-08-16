@@ -3,11 +3,33 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from utils.qt_gui import center_widget, create_status_bar
+from utils.qt_gui import center_widget, set_label_design
 
 from GUI.Fonts import fonts
 from GUI.code_buttons import create_buttons
 from GUI.code_editor import CodeEditor
+
+def create_status_bar():
+    # status bar
+    layout = QHBoxLayout()
+    layout.setContentsMargins(10, 10, 10, 10)
+    
+    # status text
+    status_text = QLabel("Status")
+    set_label_design(status_text)
+    status_text.setStyleSheet("color: red;")
+    
+    # run button
+    run_button = QPushButton()
+    run_button.setIcon(QIcon("icons/run.png"))
+    run_button.setIconSize(QSize(64, 64))
+    run_button.setFixedSize(64, 64)
+    run_button.setStyleSheet("border: none")
+    
+    layout.insertSpacing(0, 64)
+    layout.addWidget(status_text)
+    layout.addWidget(run_button)
+    return layout
 
 class CodeScreen(QWidget):
 
