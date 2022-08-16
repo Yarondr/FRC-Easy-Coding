@@ -55,22 +55,22 @@ def create_buttons(main_widget: QWidget, code_editor: CodeEditor):
 
 def forward_button_clicked(code_editor: CodeEditor):
     add_line_breaker(code_editor)
-    code_editor.insertPlainText("סע קדימה (1 מטר)")
+    code_editor.insertPlainText("סע קדימה 1 מטר")
 
 
 def backward_button_clicked(code_editor: CodeEditor):
     add_line_breaker(code_editor)
-    code_editor.insertPlainText("סע אחורה (1 מטר)")
+    code_editor.insertPlainText("סע אחורה 1 מטר")
 
 
 def turn_left_button_clicked(code_editor: CodeEditor):
     add_line_breaker(code_editor)
-    code_editor.insertPlainText("פנה (-90)")
+    code_editor.insertPlainText("פנה 90-")
 
 
 def turn_right_button_clicked(code_editor: CodeEditor):
     add_line_breaker(code_editor)
-    code_editor.insertPlainText("פנה (90)")
+    code_editor.insertPlainText("פנה 90")
 
     
 def add_line_breaker(code_editor: CodeEditor):
