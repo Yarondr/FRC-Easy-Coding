@@ -1,8 +1,11 @@
+from distutils.cmd import Command
+from unicodedata import name
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from GUI.Fonts import fonts
 from utils.qt_gui import text_edit_right_alignment
+from wrapper.code_wrapper import Commands, ErrorTypes, check_syntax
 
 class LineNumberArea(QWidget):
     
@@ -21,8 +24,10 @@ class LineNumberArea(QWidget):
 
 class CodeEditor(QPlainTextEdit):
     
-    def __init__(self):
+    def __init__(self, main_widget: QWidget):
         super().__init__()
+        self.main_widget = main_widget
+        self.code_is_valid = True
         self.lineNumberArea = LineNumberArea(self)
         
         # design the editor
@@ -115,3 +120,35 @@ class CodeEditor(QPlainTextEdit):
             selection.cursor.clearSelection()
             extraSelections.append(selection)
         self.setExtraSelections(extraSelections)
+        
+        self.check_for_errors()
+        
+    def check_for_errors(self):
+        status_text: QWidget = self.main_widget.status_text
+        lines = self.toPlainText().split('\n')
+        command, error, error_line = check_syntax(lines)
+        if not error:
+            self.code_is_valid = True
+            status_text.setText()
+            return
+        
+        error_text = ""
+        
+        match error:
+            case ErrorTypes.NUMBER_BELOW_OR_EQUAL_TO_ZERO:
+                error_text = "המספר קטן או שווה ל0"
+            case ErrorTypes.NOT_A_NUMBER:
+                error_text = "מספר לא תקין"
+            case ErrorTypes.NUMBER_REQUIRED:
+                error_text = "חסר מספר"
+            case ErrorTypes.NO_METER_KEYWORD:
+                error_text = "חסר מילת מפתח \"מטר\""
+            case ErrorTypes.INVALID_KEYWORD_AT_END:
+                error_text = "מילה לא תקינה בסוף"
+            case ErrorTypes.INVALID_DEGREE:
+                error_text = "זווית לא תקינה"
+            case ErrorTypes.INVALID_KEYWORD_AT_BEGINNING:
+                error_text = "פקודה לא תקינה"
+        
+        error_text += " בשורה " + str(error_line)
+        status_text.setText(error_text)

@@ -9,7 +9,7 @@ from GUI.Fonts import fonts
 from GUI.code_buttons import create_buttons
 from GUI.code_editor import CodeEditor
 
-def create_status_bar():
+def create_status_bar(main_widget: QWidget):
     # status bar
     layout = QHBoxLayout()
     layout.setContentsMargins(10, 10, 10, 10)
@@ -18,6 +18,7 @@ def create_status_bar():
     status_text = QLabel("Status")
     set_label_design(status_text)
     status_text.setStyleSheet("color: red;")
+    main_widget.status_text = status_text
     
     # run button
     run_button = QPushButton()
@@ -46,7 +47,7 @@ class CodeScreen(QWidget):
         
         # code editor layout
         code_layout = QVBoxLayout()
-        code_editor = CodeEditor()
+        code_editor = CodeEditor(self)
         code_buttons_layout = create_buttons(self, code_editor)
         code_layout.addWidget(code_editor)
         code_layout.addLayout(code_buttons_layout)
@@ -62,7 +63,7 @@ class CodeScreen(QWidget):
         
         
         layout = QVBoxLayout()
-        status_layout = create_status_bar()
+        status_layout = create_status_bar(self)
         main_layout = QHBoxLayout()
         
         main_layout.addLayout(path_layout)
