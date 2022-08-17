@@ -23,10 +23,12 @@ class PathViewer(QWidget):
         draw_path(commands, self)
 
 def draw_path(commands: list[Tuple[Commands, float]], draw_area: QLabel):
+    if len(commands) == 0:
+        return
     x = draw_area.width() // 2
     y = draw_area.height() // 2
     current_degree = -90
-    biggest_length = biggest_meter_length(commands) * 3
+    biggest_length = biggest_meter_length(commands) * 4.5
     painter = QPainter()
     # calcuate distance per one (smaller when the biggest_length is larger)
     distance_per_one = draw_area.width() // biggest_length

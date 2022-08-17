@@ -74,13 +74,43 @@ def check_syntax(lines: list) -> Tuple[Commands, ErrorTypes, int]:
 
 def getCommands(lines: list) -> list:
     commands: list = []
+    last = None
+    total_commands = 0
     for line in lines:
         line = str(line).strip()
         if line == "":
             continue
+        total_commands += 1
         command = Commands(line[:line.find(" ", 4)])
         value = float(line.split(" ")[2])
-        commands.append((command, value))
+        if last and (command == last[0]):
+            _, last_value = last
+            last_value += value
+            last = (command, last_value)
+        elif last:
+            commands.append(last)
+            last = None
+            commands.append((command, value))
+        elif not last and (command == Commands.FORWARD or command == Commands.BACKWARD):
+            last = (command, value)
+        elif not last:
+            commands.append((command, value))
+    
+    if last:
+        commands.append(last)
+    
+    if not commands:
+        return []
+    if (len(commands) == 1 and total_commands > 1):
+        commands.clear()
+        for line in lines:
+            line = str(line).strip()
+            if line == "":
+                continue
+            command = Commands(line[:line.find(" ", 4)])
+            value = float(line.split(" ")[2])
+            commands.append((command, value))
+    
     return commands
 
 
