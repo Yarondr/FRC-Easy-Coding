@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from GUI.Fonts import fonts
 from utils.qt_gui import text_edit_right_alignment
-from wrapper.code_wrapper import Commands, ErrorTypes, check_syntax
+from wrapper.code_validator import Commands, ErrorTypes, check_syntax
 
 class LineNumberArea(QWidget):
     
@@ -129,26 +129,26 @@ class CodeEditor(QPlainTextEdit):
         command, error, error_line = check_syntax(lines)
         if not error:
             self.code_is_valid = True
-            status_text.setText()
+            status_text.setText("")
             return
         
-        error_text = ""
+        error_text = "שגיאה: "
         
         match error:
             case ErrorTypes.NUMBER_BELOW_OR_EQUAL_TO_ZERO:
-                error_text = "המספר קטן או שווה ל0"
+                error_text += "המספר קטן או שווה ל0"
             case ErrorTypes.NOT_A_NUMBER:
-                error_text = "מספר לא תקין"
+                error_text += "מספר לא תקין"
             case ErrorTypes.NUMBER_REQUIRED:
-                error_text = "חסר מספר"
+                error_text += "חסר מספר"
             case ErrorTypes.NO_METER_KEYWORD:
-                error_text = "חסר מילת מפתח \"מטר\""
+                error_text += "חסר מילת מפתח \"מטר\""
             case ErrorTypes.INVALID_KEYWORD_AT_END:
-                error_text = "מילה לא תקינה בסוף"
+                error_text += "מילה לא תקינה בסוף"
             case ErrorTypes.INVALID_DEGREE:
-                error_text = "זווית לא תקינה"
+                error_text += "זווית לא תקינה"
             case ErrorTypes.INVALID_KEYWORD_AT_BEGINNING:
-                error_text = "פקודה לא תקינה"
+                error_text += "פקודה לא תקינה"
         
         error_text += " בשורה " + str(error_line)
         status_text.setText(error_text)

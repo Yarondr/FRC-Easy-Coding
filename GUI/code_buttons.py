@@ -65,12 +65,12 @@ def backward_button_clicked(code_editor: CodeEditor):
 
 def turn_left_button_clicked(code_editor: CodeEditor):
     add_line_breaker(code_editor)
-    code_editor.insertPlainText("פנה 90-")
+    code_editor.insertPlainText("פנה שמאלה 90")
 
 
 def turn_right_button_clicked(code_editor: CodeEditor):
     add_line_breaker(code_editor)
-    code_editor.insertPlainText("פנה 90")
+    code_editor.insertPlainText("פנה ימינה 90")
 
     
 def add_line_breaker(code_editor: CodeEditor):
