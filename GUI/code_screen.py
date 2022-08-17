@@ -8,6 +8,7 @@ from utils.qt_gui import center_widget, set_label_design
 from GUI.Fonts import fonts
 from GUI.code_buttons import create_buttons
 from GUI.code_editor import CodeEditor
+from GUI.path_drawer import PathViewer
 
 def create_status_bar(main_widget: QWidget):
     # status bar
@@ -48,18 +49,17 @@ class CodeScreen(QWidget):
         # code editor layout
         code_layout = QVBoxLayout()
         code_editor = CodeEditor(self)
+        self.code_editor = code_editor
         code_buttons_layout = create_buttons(self, code_editor)
         code_layout.addWidget(code_editor)
         code_layout.addLayout(code_buttons_layout)
         
-        # path area layout 
-        # TODO: 
+        # path viewer layout 
         path_layout = QVBoxLayout()
-        color_label = QLabel()
-        self.color_label = color_label
-        color_label.setStyleSheet("background-color: red")
-        color_label.setFixedWidth(self.width() // 2)
-        path_layout.addWidget(color_label)
+        path_viewer = PathViewer(self)
+        self.path_viewer = path_viewer
+        path_viewer.setFixedWidth(self.width() // 2)
+        path_layout.addWidget(path_viewer)
         
         
         layout = QVBoxLayout()
@@ -78,7 +78,6 @@ class CodeScreen(QWidget):
         self.show()
     
     
-    def resizeEvent(self, a0: QResizeEvent) -> None:
-        super().resizeEvent(a0)
-        self.color_label.setFixedWidth(self.width() // 2)
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        self.path_viewer.setFixedWidth(self.width() // 2)
         

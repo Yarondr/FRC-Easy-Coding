@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from GUI.Fonts import fonts
 from utils.qt_gui import text_edit_right_alignment
-from wrapper.code_validator import Commands, ErrorTypes, check_syntax
+from validators.code_validator import Commands, ErrorTypes, check_syntax, getCommands
 
 class LineNumberArea(QWidget):
     
@@ -92,7 +92,6 @@ class CodeEditor(QPlainTextEdit):
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
         bottom = top + self.blockBoundingRect(block).height()
 
-        # Just to make sure I use the right font
         height = self.fontMetrics().height()
         while block.isValid() and (top <= event.rect().bottom()):
             if block.isVisible() and (bottom >= event.rect().top()):
@@ -129,6 +128,8 @@ class CodeEditor(QPlainTextEdit):
         command, error, error_line = check_syntax(lines)
         if not error:
             self.code_is_valid = True
+            commands = getCommands(lines)
+            self.main_widget.path_viewer.update()
             status_text.setText("")
             return
         
