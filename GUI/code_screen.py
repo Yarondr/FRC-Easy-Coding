@@ -2,6 +2,7 @@ from venv import create
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from utils.robot.project_deployer import build_code, deploy_code
 
 from utils.qt_gui import center_widget, set_label_design
 
@@ -9,6 +10,8 @@ from GUI.Fonts import fonts
 from GUI.code_buttons import create_buttons
 from GUI.code_editor import CodeEditor
 from GUI.path_drawer import PathViewer
+from utils.robot.project_deployer import get_wpilib_jdk_path
+from utils.robot.robot_files import copy_robot_container, write_code
 from wrapper.code_wrapper import wrap_commands_to_java
 from validators.code_validator import getCommands
 
@@ -88,6 +91,14 @@ class CodeScreen(QWidget):
         if self.code_editor.code_is_valid:
             lines = self.code_editor.toPlainText().split('\n')
             commands = getCommands(lines)
-            wrap_commands_to_java(commands)
-                
-                
+            java_code = wrap_commands_to_java(commands)
+            write_code(java_code)
+            jdk_path = get_wpilib_jdk_path()
+            if not jdk_path:
+                self.status_text.setText("Can't find Wpilib JDK!")
+                return
+            build_status = build_code(self, jdk_path)
+            if build_status:
+                deploy_code(self, jdk_path)
+                # clean robot container file
+                copy_robot_container()

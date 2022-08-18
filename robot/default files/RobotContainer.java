@@ -45,6 +45,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return new MoveForward(1, chassis).andThen(new TurnInPlace(90, Direction.LEFT, chassis));
+
   }
 }
