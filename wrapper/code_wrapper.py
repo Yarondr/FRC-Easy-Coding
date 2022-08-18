@@ -22,14 +22,15 @@ def wrap_commands_to_java(commands: list[Tuple[Commands, int]]):
         case 0:
             return
         case 1:
-            java_code = java_commands_list[0] + ";"
+            java_code = "\t\t\treturn " + java_commands_list[0] + ";"
         case 2:
-            java_code = "%s\n\t.andThen(%s);" % java_commands_list
+            java_code = "\t\t\treturn %s\n\t\t\t.andThen(%s);" % java_commands_list
         case _:
             java_code = (
-    """ %s
+    """
+        return %s
         .andThen(%s)
         .andThen(""" % java_commands_list[:2]
-    ) + ")\n\t.andThen(".join(java_commands_list[2:]) + ");"
-    print(java_code)
+    ) + ")\n\t\t\t.andThen(".join(java_commands_list[2:]) + ");"
+    return java_code
         
