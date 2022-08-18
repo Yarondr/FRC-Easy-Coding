@@ -1,5 +1,5 @@
 from typing import Tuple
-from validators.code_validator import Commands, getCommands
+from validators.code_validator import Commands, getCommands, isMoveCommand
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -36,7 +36,7 @@ def draw_path(commands: list[Tuple[Commands, float]], draw_area: QLabel):
     painter.begin(draw_area)
     painter.setPen(QPen(QColor(0, 0, 0), 5))
     for command, value in commands:
-        if command == Commands.FORWARD or command == Commands.BACKWARD:
+        if isMoveCommand(command):
             direction = 1 if command == Commands.FORWARD else -1
             temp_x = int(x + math.cos(math.radians(current_degree)) * value * direction * distance_per_one)
             temp_y = int(y + math.sin(math.radians(current_degree)) * value * direction * distance_per_one)
@@ -56,7 +56,7 @@ def draw_path(commands: list[Tuple[Commands, float]], draw_area: QLabel):
 def biggest_meter_length(commands: list[Tuple[Commands, float]]) -> float:
     biggest_length = 0
     for command, value in commands:
-        if command == Commands.FORWARD or command == Commands.BACKWARD:
+        if isMoveCommand(command):
             length = value
             if length > biggest_length:
                 biggest_length = length

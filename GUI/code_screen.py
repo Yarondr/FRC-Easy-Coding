@@ -9,6 +9,8 @@ from GUI.Fonts import fonts
 from GUI.code_buttons import create_buttons
 from GUI.code_editor import CodeEditor
 from GUI.path_drawer import PathViewer
+from wrapper.code_wrapper import wrap_commands_to_java
+from validators.code_validator import getCommands
 
 def create_status_bar(main_widget: QWidget):
     # status bar
@@ -27,6 +29,7 @@ def create_status_bar(main_widget: QWidget):
     run_button.setIconSize(QSize(64, 64))
     run_button.setFixedSize(64, 64)
     run_button.setStyleSheet("border: none")
+    run_button.clicked.connect(main_widget.run_button_clicked)
     
     layout.insertSpacing(0, 64)
     layout.addWidget(status_text)
@@ -81,3 +84,10 @@ class CodeScreen(QWidget):
     def resizeEvent(self, event: QResizeEvent) -> None:
         self.path_viewer.setFixedWidth(self.width() // 2)
         
+    def run_button_clicked(self):
+        if self.code_editor.code_is_valid:
+            lines = self.code_editor.toPlainText().split('\n')
+            commands = getCommands(lines)
+            wrap_commands_to_java(commands)
+                
+                

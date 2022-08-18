@@ -16,6 +16,12 @@ class ErrorTypes(Enum):
     INVALID_KEYWORD_AT_END = 5
     INVALID_DEGREE = 6
     INVALID_KEYWORD_AT_BEGINNING = 7
+    
+def isMoveCommand(command: Commands) -> bool:
+    return command == Commands.FORWARD or command == Commands.BACKWARD
+
+def isTurnCommand(command: Commands) -> bool:
+    return command == Commands.TURN_LEFT or command == Commands.TURN_RIGHT
 
 def check_syntax(lines: list) -> Tuple[Commands, ErrorTypes, int]:
     for index, line in enumerate(lines):
@@ -72,7 +78,7 @@ def check_syntax(lines: list) -> Tuple[Commands, ErrorTypes, int]:
             return None, ErrorTypes.INVALID_KEYWORD_AT_BEGINNING, index + 1
     return None, None, -1
 
-def getCommands(lines: list) -> list:
+def getCommands(lines: list) -> list[Tuple[Commands, int]]:
     commands: list = []
     last = None
     total_commands = 0
@@ -81,7 +87,10 @@ def getCommands(lines: list) -> list:
         if line == "":
             continue
         total_commands += 1
-        command = Commands(line[:line.find(" ", 4)])
+        try:
+            command = Commands(line[:line.find(" ", 4)])
+        except ValueError:
+            return []
         value = float(line.split(" ")[2])
         if last and (command == last[0]):
             _, last_value = last
@@ -91,7 +100,7 @@ def getCommands(lines: list) -> list:
             commands.append(last)
             last = None
             commands.append((command, value))
-        elif not last and (command == Commands.FORWARD or command == Commands.BACKWARD):
+        elif not last and isMoveCommand(command):
             last = (command, value)
         elif not last:
             commands.append((command, value))

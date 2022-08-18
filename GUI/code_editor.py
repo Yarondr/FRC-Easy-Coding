@@ -133,6 +133,7 @@ class CodeEditor(QPlainTextEdit):
             status_text.setText("")
             return
         
+        self.code_is_valid = False
         error_text = "שגיאה: "
         
         match error:
