@@ -6,12 +6,16 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.commands.InstantCommandInDisable;
 
 public class Chassis extends SubsystemBase {
 
@@ -19,6 +23,7 @@ public class Chassis extends SubsystemBase {
   private final PigeonIMU gyro;
   private static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(
       Constants.KS, Constants.KV);
+  private boolean isBrake;
 
   /**
    * Creates a new Chassis.
@@ -28,6 +33,7 @@ public class Chassis extends SubsystemBase {
     leftBack = new TalonFX(Constants.LEFT_BACK_PORT);
     rightFront = new TalonFX(Constants.RIGHT_FRONT_PORT);
     rightBack = new TalonFX(Constants.RIGHT_BACK_PORT);
+    leftFront.setNeutralMode(NeutralMode.Brake);
     gyro = new PigeonIMU(Constants.GYRO_PORT);
 
     resetConfig();
@@ -38,6 +44,23 @@ public class Chassis extends SubsystemBase {
     rightBack.follow(rightFront);
 
     setKP(Constants.KP);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    SmartDashboard.putData("NeutralMode", new InstantCommandInDisable(() -> {setNeutralMode(!isBrake);}));
+    builder.addDoubleProperty("Current Angle", this::getGyroAngle, null);
+    builder.addDoubleProperty("Left Sensor Position", this::getMetersLeft, null);
+    builder.addDoubleProperty("Right Sensor Position", this::getMetersRight, null);
+  }
+
+  public void setNeutralMode(boolean isBrake) {
+      this.isBrake = isBrake;
+      NeutralMode mode = isBrake ? NeutralMode.Brake : NeutralMode.Coast;
+      leftFront.setNeutralMode(mode);
+      rightFront.setNeutralMode(mode);
+      leftBack.setNeutralMode(mode);
+      rightBack.setNeutralMode(mode);
   }
 
   /**
@@ -67,6 +90,7 @@ public class Chassis extends SubsystemBase {
    * @param kp the kP to set
    */
   private void setKP(double kp) {
+    kp *= 1023;
     leftFront.config_kP(0, kp);
     rightFront.config_kP(0, kp);
     leftBack.config_kP(0, kp);
@@ -125,6 +149,15 @@ public class Chassis extends SubsystemBase {
    */
   public double getGyroAngle() {
     return gyro.getFusedHeading();
+  }
+
+  public void setHeading(double angle) {
+    gyro.setFusedHeading(angle);
+  }
+
+  /** Zeroes the heading of the robot. */
+  public void resetGyro() {
+    setHeading(0);
   }
 
   @Override

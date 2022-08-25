@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Chassis;
 
@@ -17,7 +18,7 @@ public class TurnInPlace extends CommandBase {
   private final Direction direction;
   private final double degrees;
   private double startAngle;
-  private static final double TURN_VELOCITY = 0.3;
+  private static final double TURN_VELOCITY = 0.005;
   private static final double ERROR = 1.5;
 
   /**
@@ -45,6 +46,7 @@ public class TurnInPlace extends CommandBase {
   @Override
   public void initialize() {
     startAngle = chassis.getGyroAngle();
+    SmartDashboard.putNumber("start angle", startAngle);
     if (direction == Direction.LEFT) {
       chassis.setVelocity(-TURN_VELOCITY, TURN_VELOCITY);
     } else {
@@ -55,7 +57,9 @@ public class TurnInPlace extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    chassis.setVelocity(0, 0);
+    chassis.setPower(0, 0);
+    SmartDashboard.putNumber("degressDone", getDegreesDone());
+    SmartDashboard.putNumber("angle", chassis.getGyroAngle());
   }
 
   // Returns true when the command should end.

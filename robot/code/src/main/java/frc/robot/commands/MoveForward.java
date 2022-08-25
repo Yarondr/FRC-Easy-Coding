@@ -12,7 +12,7 @@ public class MoveForward extends CommandBase {
   private final Chassis chassis;
   private final double distance; //in meters
   private double start;
-  private static final double VELOCITY = 0.5;
+  private static final double VELOCITY = 0.2;
   private static final double ERROR = 0.05;
 
   /**
