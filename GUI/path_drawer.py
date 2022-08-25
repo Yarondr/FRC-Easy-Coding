@@ -39,7 +39,7 @@ def calculate_path(commands: list[Tuple[Commands, float]], draw_area: QLabel, bi
             temp_x = int(x + math.cos(math.radians(current_degree)) * value * direction * distance_per_one)
             temp_y = int(y + math.sin(math.radians(current_degree)) * value * direction * distance_per_one)
             
-            print(x, y, temp_x, temp_y, draw_area.width(), draw_area.height())
+            # print(x, y, temp_x, temp_y, draw_area.width(), draw_area.height())
             if temp_x > draw_area.width() or temp_x < 0:
                 return calculate_path(commands, draw_area, biggest_length * 1.5)
             if temp_y > draw_area.height() or temp_y < 0:
