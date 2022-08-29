@@ -101,4 +101,4 @@ class CodeScreen(QWidget):
             if build_status:
                 deploy_code(self, jdk_path)
                 # clean robot container file
-                copy_robot_container()
+                # copy_robot_container()
