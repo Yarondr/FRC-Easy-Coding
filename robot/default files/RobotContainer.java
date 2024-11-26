@@ -4,13 +4,14 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.commands.MoveForward;
-import frc.robot.commands.TurnInPlace;
-import frc.robot.commands.TurnInPlace.Direction;
-import frc.robot.subsystems.Chassis;
+import frc.robot.chassis.subsystems.Chassis;
+import frc.robot.utils.LogManager;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -18,15 +19,25 @@ import frc.robot.subsystems.Chassis;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and button mappings) should be declared here.
  */
-public class RobotContainer {
-  // The robot's subsystems and commands are defined here...
+public class RobotContainer implements Sendable{
+  public static boolean isRed;
+  public static RobotContainer robotContainer;
 
-  private final Chassis chassis;
+  public LogManager logManager = new LogManager();
+
+  public static Chassis chassis;
   
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    robotContainer = this;
+    
+    DataLogManager.start();
+    DriverStation.startDataLog(DataLogManager.getLog());
+
     chassis = new Chassis();
     // Configure the button bindings
+
+    SmartDashboard.putData(this);
     configureButtonBindings();
   }
 
@@ -38,6 +49,18 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {}
 
+  public void isRed(boolean isRed) {
+    RobotContainer.isRed = isRed;
+  }
+  public boolean isRed() {
+    return isRed;
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.addBooleanProperty("is Red",this::isRed, this::isRed);
+  }
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -45,6 +68,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
+    return null;
 
   }
 }

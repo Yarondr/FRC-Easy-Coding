@@ -13,16 +13,17 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final int LEFT_FRONT_PORT = 3; 
-    public static final int LEFT_BACK_PORT = 4; 
-    public static final int RIGHT_FRONT_PORT = 1; 
-    public static final int RIGHT_BACK_PORT = 2; 
+    public static final String CANBUS = "canivore";
+    // public static final int LEFT_FRONT_PORT = 3; 
+    // public static final int LEFT_BACK_PORT = 4; 
+    // public static final int RIGHT_FRONT_PORT = 1; 
+    // public static final int RIGHT_BACK_PORT = 2; 
 
-    public static final int GYRO_PORT = 14;
+    // public static final int GYRO_PORT = 14;
 
-    public static final double KS = 0.03698 * 12;
-    public static final double KV = 0.2386 * 12;
-    public static final double KP = 0.00005;
+    // public static final double KS = 0.03698 * 12;
+    // public static final double KV = 0.2386 * 12;
+    // public static final double KP = 0.00005;
 
-    public static final double PULSES_PER_METER = 51330;
+    // public static final double PULSES_PER_METER = 51330;
 }

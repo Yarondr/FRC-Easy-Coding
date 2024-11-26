@@ -7,16 +7,15 @@ directions = {
 }
 
 java_commands = {
-    Commands.FORWARD: "new MoveForward(%s, chassis)",
-    Commands.BACKWARD: "new MoveForward(-%s, chassis)",
-    Commands.TURN_LEFT: "new TurnInPlace(%s, %s, chassis)",
-    Commands.TURN_RIGHT: "new TurnInPlace(%s, %s, chassis)",
+    Commands.FORWARD: "new MoveX(chassis, %s)",
+    Commands.BACKWARD: "new MoveX(chassis, -%s)",
+    Commands.TURN_LEFT: "new Turn(chassis, %s * -0.0174532925)",
+    Commands.TURN_RIGHT: "new Turn(chassis, %s * 0.0174532925)",
 }
 
 def wrap_commands_to_java(commands: list[Tuple[Commands, int]]):
     
-    java_commands_list = tuple((java_commands[command] % value) if isMoveCommand(command) 
-                          else (java_commands[command] % (value, directions[command]))
+    java_commands_list = tuple((java_commands[command] % value) 
                           for command, value in commands)
     match len(java_commands_list):
         case 0:
