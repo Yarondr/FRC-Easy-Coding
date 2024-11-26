@@ -1,11 +1,6 @@
 from typing import Tuple
 from validators.code_validator import Commands, isMoveCommand
 
-directions = {
-    Commands.TURN_LEFT: "Direction.LEFT",
-    Commands.TURN_RIGHT: "Direction.RIGHT",
-}
-
 java_commands = {
     Commands.FORWARD: "new MoveX(chassis, %s)",
     Commands.BACKWARD: "new MoveX(chassis, -%s)",
