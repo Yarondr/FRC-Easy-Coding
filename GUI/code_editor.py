@@ -1,4 +1,4 @@
-from distutils.cmd import Command
+# from distutils.cmd import Command
 from unicodedata import name
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
