@@ -13,7 +13,7 @@ def write_code(java_code):
     with open(new_file_path, "r") as file:
         data = file.readlines()
     
-    data.insert(47, java_code)
+    data.insert(72, java_code)
     
     with open(new_file_path, "w") as file:
         file.writelines(data)

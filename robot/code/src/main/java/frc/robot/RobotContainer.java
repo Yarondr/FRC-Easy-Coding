@@ -12,6 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.chassis.subsystems.Chassis;
 import frc.robot.utils.LogManager;
+import frc.robot.commands.MoveY;
+import frc.robot.commands.MoveX;
+import frc.robot.commands.Turn;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -45,10 +48,7 @@ public class RobotContainer implements Sendable{
    * Use this method to define your button->command mappings. Buttons can be created by
    * instantiating a {@link GenericHID} or one of its subclasses ({@link
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-
-        return new MoveX(chassis, 1.0)
-        .andThen(new MoveX(chassis, 1.0))
-        .andThen(new MoveX(chassis, 1.0));   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {}
 
@@ -70,8 +70,8 @@ public class RobotContainer implements Sendable{
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return null;
 
+        /*Auto genereted*/
+        return null;
   }
 }

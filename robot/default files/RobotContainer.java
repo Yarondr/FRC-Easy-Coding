@@ -12,6 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.chassis.subsystems.Chassis;
 import frc.robot.utils.LogManager;
+import frc.robot.commands.MoveY;
+import frc.robot.commands.MoveX;
+import frc.robot.commands.Turn;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -67,8 +70,6 @@ public class RobotContainer implements Sendable{
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return null;
 
   }
 }
