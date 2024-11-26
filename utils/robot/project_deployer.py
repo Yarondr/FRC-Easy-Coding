@@ -17,6 +17,7 @@ def build_code(main_widget: QWidget, jdk_path):
         return True
     else:
         status_label.setText("Build failed!")
+        print(output.stderr)
         return False
     
 def deploy_code(main_widget: QWidget, jdk_path):
@@ -30,6 +31,7 @@ def deploy_code(main_widget: QWidget, jdk_path):
         status_label.setText("Deployment successful!")
     else:
         status_label.setText("Deployment failed! Check connection to robot.")
+        print(output.stderr)
     
 def get_wpilib_jdk_path():
     wpilib_path = r'C:\Users\Public\wpilib'
