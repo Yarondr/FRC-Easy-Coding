@@ -27,7 +27,7 @@ public class MoveX extends Command {
 
   @Override
   public void execute() {
-    chassis.setVelocitiesRobotRel(new ChassisSpeeds(dis >= 0 ? 1 : -1, 0, 0));
+    chassis.setVelocitiesRobotRel(new ChassisSpeeds(dis >= 0 ? 0.25 : -0.25, 0, 0));
   }
 
   @Override
@@ -37,6 +37,6 @@ public class MoveX extends Command {
 
   @Override
   public boolean isFinished() {
-    return Math.abs(chassis.getPoseX() - startingPos) >= dis;
+    return Math.abs(chassis.getPoseX() - startingPos) >= Math.abs(dis);
   }
 }

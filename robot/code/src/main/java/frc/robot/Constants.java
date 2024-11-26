@@ -13,7 +13,7 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final String CANBUS = "canivore";
+    public static final String CANBUS = "rio";
     // public static final int LEFT_FRONT_PORT = 3; 
     // public static final int LEFT_BACK_PORT = 4; 
     // public static final int RIGHT_FRONT_PORT = 1; 
