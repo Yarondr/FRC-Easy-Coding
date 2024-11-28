@@ -1,442 +1,167 @@
 package frc.robot.chassis.subsystems;
 
-
-import static frc.robot.chassis.ChassisConstants.*;
-
-import java.util.Arrays;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Field;
 import frc.robot.RobotContainer;
-import frc.robot.chassis.utils.DemaciaOdometry;
-import frc.robot.utils.LogManager;
-import frc.robot.vision.subsystem.VisionByNote;
-import frc.robot.vision.subsystem.VisionByTag;
+import frc.robot.chassis.SwerveConstants;
 
-
-
+/**
+ * Represents the swerve drive chassis subsystem for robot movement
+ */
 public class Chassis extends SubsystemBase {
-  private final SwerveModule[] modules;
-  public final Pigeon2 gyro;
-  private SwerveDrivePoseEstimator poseEstimator;
-  private DemaciaOdometry demaciaOdometry;
-  private final Field2d field;
-  private Pose2d mergedPose;
- 
- 
+    // Swerve Modules
+    private final SwerveModule frontLeft;
+    private final SwerveModule frontRight;
+    private final SwerveModule backLeft;
+    private final SwerveModule backRight;
 
-  public static double targetVelocity = 0;
-  public static double currentVelocity = 0;
+    private SwerveModule[] modules;
+    // Kinematics
+    private final SwerveDriveKinematics kinematics;
 
-  public VisionByTag visionByTag;
-  public VisionByNote visionByNote;
-  private PIDController rotationPID = new PIDController(0.3,0.0, 0.00);
-  private boolean hasCalibratedPose = false;
+    // Sensors
+    private final Pigeon2 gyro;
 
-  private boolean isAutoIntake = false;
+    /**
+     * Constructor for Chassis subsystem
+     */
+    public Chassis() {
+        // Initialize Gyro
+        gyro = new Pigeon2(SwerveConstants.GYRO_ID);
 
-  public Chassis() {
-    modules = new SwerveModule[] {
-        new SwerveModule(FRONT_LEFT, this),
-        new SwerveModule(FRONT_RIGHT, this),
-        new SwerveModule(BACK_LEFT, this),
-        new SwerveModule(BACK_RIGHT, this),
-    };    
-    gyro = new Pigeon2(GYRO_ID, Constants.CANBUS);
-    gyro.setYaw(0);
+        // Create Swerve Modules
+        frontLeft = new SwerveModule(SwerveConstants.FRONT_LEFT);
+        frontRight = new SwerveModule(SwerveConstants.FRONT_RIGHT);
+        backLeft = new SwerveModule(SwerveConstants.BACK_LEFT);
+        backRight = new SwerveModule(SwerveConstants.BACK_RIGHT);
 
-    this.visionByTag = new VisionByTag(gyro);
-    this.visionByNote = new VisionByNote(new Pose2d());
+        modules = new SwerveModule[4];
+        modules[0] = frontLeft;
+        modules[1] = frontRight;
+        modules[2] = backLeft;
+        modules[3] = backRight;
+
+
+
+        // Initialize Kinematics
+        kinematics = SwerveConstants.KINEMATICS;
+
+
+
+      addSmartDashboard();
+
+    }
+
+    @Override
+    public void periodic() {
+    }
+
+    /**
+     * Set chassis velocities based on ChassisSpeeds
+     * @param chassisSpeeds Desired chassis speeds
+     */
+    public void setVelocities(ChassisSpeeds chassisSpeeds) {
+        // Convert chassis speeds to module states
+        SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(chassisSpeeds);
+        
+        // Normalize wheel speeds
+        SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, SwerveConstants.MAX_DRIVE_VELOCITY);
+
+        // Set individual module states
+        frontLeft.setState(moduleStates[0]);
+        frontRight.setState(moduleStates[1]);
+        backLeft.setState(moduleStates[2]);
+        backRight.setState(moduleStates[3]);
+    }
+
+    /**
+     * Set chassis velocities based on ChassisSpeeds
+     * @param chassisSpeeds Desired chassis speeds
+     */
+    public void setVelocitiesTurnTo(ChassisSpeeds chassisSpeeds, Rotation2d angle, double kp) {
+        //turn to with kp
+        chassisSpeeds.omegaRadiansPerSecond = getGyroRotation().minus(angle).getRadians()*kp;
+        //Convert chassis speeds to robot relativ
+        chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation());
+        // Convert chassis speeds to module states
+        SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(chassisSpeeds);
+        
+        // Normalize wheel speeds
+        SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, SwerveConstants.MAX_DRIVE_VELOCITY);
+
+        // Set individual module states
+        frontLeft.setState(moduleStates[0]);
+        frontRight.setState(moduleStates[1]);
+        backLeft.setState(moduleStates[2]);
+        backRight.setState(moduleStates[3]);
+    }
     
-    poseEstimator = new SwerveDrivePoseEstimator(KINEMATICS, getRawAngle(), getModulePositions(), new Pose2d());
-    visionByNote = new VisionByNote(poseEstimator.getEstimatedPosition());
-    demaciaOdometry = new DemaciaOdometry(getRawAngle(), getModulePositions(), getPose());
-    setBrake(true);
-    field = new Field2d();
-    SmartDashboard.putData(field);
-//    SmartDashboard.putData(this);
-    
-
-    ShuffleboardTab ntTab = Shuffleboard.getTab("Chassis");
-    //var setGyroEntry = ntTab.add("Set Gyro Angle", 0).getEntry();
-    ntTab.add("Set gyro to 0 ",
-       new InstantCommand( () -> setGyroAngle(0))
-       .ignoringDisable(true));
-
-    ntTab.add("gyro",gyro.getAngle());
-
-    ntTab.add("Set gyro to 180 ",
-       new InstantCommand( () -> setGyroAngle(180))
-       .ignoringDisable(true));
 
 
-    ntTab.add("run command", 
-      new RunCommand(()->{setModulesPower(1); setModulesAngleFromSB(0);}, this));
-
-    ntTab.add("reset gyro", new InstantCommand(()-> setGyroAngle(0)));
-    ntTab.add("set coast",
-        new InstantCommand(() -> setBrake(false)).ignoringDisable(true));
-    ntTab.add("set brake",
-        new InstantCommand(() -> setBrake(true)).ignoringDisable(true));
-    ntTab.add("reset wheels", new InstantCommand(() -> resetWheels()).ignoringDisable(true));
-        SmartDashboard.putData("reset pose", new InstantCommand(() -> setOdometryToForward()).ignoringDisable(true));
-
-    ntTab.add("calibrate", new InstantCommand(()->calibrate(), this).ignoringDisable(true));
-
-
-    //   ntTab.add("Set Modules Angle", 
-    //     new RunCommand(() -> setModulesAngleFromSB(0)).ignoringDisable(true));
-    //  ntTab.add("SetAngle45", new RunCommand(() -> {
-    //   Rotation2d angle = Rotation2d.fromDegrees(45);
-    //   for (SwerveModule module : modules) {
-    //     module.setSteerPosition(angle);  
-    //   }});
-
-    
-    var e = ntTab.add("Set Steer Rot", 0.5).getEntry();
-    ntTab.add("Set Steer CMD", new RunCommand(()->modules[1].setSteerPosition(
-      e.getDouble(0)),this));
-    
-  }
-
-  public void setVelRobot(ChassisSpeeds speeds){
-    SwerveModuleState[] states = KINEMATICS_DEMACIA.toSwerveModuleStates(speeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_DRIVE_VELOCITY);
-    targetVelocity = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond).getNorm() ;
-    currentVelocity = getVelocity().getNorm();
-    
-    setModuleStates(states);
-  }
-
-  public SwerveModule[] getModules() {
-    return modules;
-  }
-
-  public void calibrate() {
-    SmartDashboard.putNumber("LEFT FRONT", modules[0].getAngleRaw());
-    SmartDashboard.putNumber("RIGHT FRONT", modules[1].getAngleRaw());
-    SmartDashboard.putNumber("LEFT BACK", modules[2].getAngleRaw());
-    SmartDashboard.putNumber("RIGHT BACK", modules[3].getAngleRaw());
-  }
-
-  public boolean isRed() {
-    return RobotContainer.robotContainer.isRed();
-  }
-
-  public void setGyroAngle(double angle){
-    Pose2d newPose = new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(angle));
-    poseEstimator.resetPosition(getRawAngle(), getModulePositions(), newPose);
-  }
-
-  public SwerveModule getModule(int i) {
-    return modules[i];
-  }
-
-  public void resetWheels() {
-    Rotation2d angle = Rotation2d.fromDegrees(0);
-    for (var module : modules) {
-      module.setSteerPosition(angle.getRotations());
+    /**
+     * Get gyro rotation
+     * @return Current gyro rotation
+     */
+    public Rotation2d getGyroRotation() {
+        return gyro.getRotation2d();
     }
-  }
 
-  /**
-   * Stops the entire chassis
-   */
-  public void stop() {
-    for (var m : modules) {
-      m.stop();
+    public void setSteerAngle(double angle){
+      for (SwerveModule m : modules) {
+        m.setSteerAngle(Rotation2d.fromDegrees(angle));
+      }
     }
-  }
-
-  public void setModulesSteerPower(double power) {
-    for (var m : modules) {
-      m.setSteerPower(power);
+    /**
+     * Determine alliance color
+     * @return True if on red alliance, false if blue
+     */
+    public boolean isRed() {
+        return RobotContainer.isRed();
     }
-  }
-  public void setModulesSteerPower(double power, int i) {
 
-    modules[i].setSteerPower(power);
-    
-  }
-
-  public void setModulesSteerVoltage(double Voltage) {
-    for (var m : modules) {
-      m.setSteerPower(Voltage);
+    private Command resetGyro() {
+      return new InstantCommand(()-> gyro.reset()).ignoringDisable(true);
     }
-  }
-  public void setModulesSteerVoltage(double Voltage, int i) {
 
-    modules[i].setSteerVoltage(Voltage);
-    
-  }
-
-  public void setModuleSteerVelocity(double velocity, int moduleIndex) {
-    modules[moduleIndex].setSteerVelocity(velocity);
-  }
-
-  public void setModulesPower(double power) {
-    for (var m : modules) {
-      m.setPower(power);
-      m.setSteerPower(0);
+    /**
+     * Update SmartDashboard with chassis telemetry
+     */
+    private void addSmartDashboard() {
+      SmartDashboard.putData("Chassis", this);
+      SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
+      SmartDashboard.putData("reset gyro", resetGyro());
+      SmartDashboard.putData("Swerve Drive", new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+        
+            builder.addDoubleProperty("Front Left Angle", () -> frontLeft.getAbsoluteAngle(), null);
+            builder.addDoubleProperty("Front Left Velocity", () -> frontLeft.getVelocity(), null);
+        
+            builder.addDoubleProperty("Front Right Angle", () -> frontRight.getAbsoluteAngle(), null);
+            builder.addDoubleProperty("Front Right Velocity", () -> frontRight.getVelocity(), null);
+        
+            builder.addDoubleProperty("Back Left Angle", () -> backLeft.getAbsoluteAngle(), null);
+            builder.addDoubleProperty("Back Left Velocity", () -> backLeft.getVelocity(), null);
+        
+            builder.addDoubleProperty("Back Right Angle", () -> backRight.getAbsoluteAngle(), null);
+            builder.addDoubleProperty("Back Right Velocity", () -> backRight.getVelocity(), null);
+        
+            builder.addDoubleProperty("Robot Angle", () -> getGyroRotation().getRadians(), null);
+          }
+        });
+      
     }
-  }
 
 
-
-  public double[] getAngularVelocities() {
-    double[] angularVelocities = new double[modules.length];
-    for (int i = 0; i < modules.length; i++) {
-      angularVelocities[i] = modules[i].getSteerVelocity();
-    }
-    return angularVelocities;
-  }
-
-  public void setVelocity(double v) {
-    for (SwerveModule m : modules) {
-      m.setVelocity(v);
-    }
-  }
-
-  public double[] getVelocities() {
-    double[] velocities = new double[modules.length];
-    for (int i = 0; i < modules.length; i++) {
-      velocities[i] = modules[i].getVelocity();
-    }
-    return velocities;
-  }
-
-  public void setPose(Pose2d pose){
-    poseEstimator.resetPosition(getRawAngle(), getModulePositions(), pose);
-  }
-
-
-  public void setVelocitiesRobotRel(ChassisSpeeds speeds){
-    SwerveModuleState[] states = KINEMATICS_DEMACIA.toSwerveModuleStates(speeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_DRIVE_VELOCITY);
-    targetVelocity = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond).getNorm();
-    currentVelocity = getVelocity().getNorm();
-    
-    setModuleStates(states);
-  }
-
-  /**
-   * Sets the velocity of the chassis
-   * 
-   * @param speeds In m/s and rad/s
-   */
-  public void setVelocities(ChassisSpeeds speeds) {
-    ChassisSpeeds relativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getAngle());
-    setVelocitiesRobotRel(relativeSpeeds);
-  }
-
-
-  public void setVelocitiesRotateToSpeaker(ChassisSpeeds speeds){
-    Translation2d speaker = isRed() ? Field.RedSpeakerTarget : Field.SpeakerTarget;
-    Rotation2d toSpeakerAngle = speaker.minus(getPose().getTranslation()).getAngle();
-    speeds.omegaRadiansPerSecond = getOmegaToAngle(toSpeakerAngle);
-    
-    // System.out.println("WANTED ANGLE: " + toSpeakerAngle);
-    // System.out.println("CUR ANGLE: " + getAngle());
-    setVelocities(speeds);
-    
-  }
-
-  public void setVelocitiesRotateToAngle(ChassisSpeeds speeds, Rotation2d angle){
-    speeds.omegaRadiansPerSecond = getOmegaToAngle(angle);
-    setVelocities(speeds);
-  }
-
-  public double getOmegaToAngle(Rotation2d fieldAngle){
-    double kP = 0.35;
-    double diffAngle = MathUtil.inputModulus(fieldAngle.minus(getAngle()).getDegrees(), -180,180);
-    // System.out.println("-------------------------------");
-    //         System.out.println("wanted= " + fieldAngle.getDegrees() + " gyro=" + 
-    //                 getAngle().getDegrees() + " diff=" + diffAngle);
-    // System.out.println("-------------------------------");
-    return Math.abs(diffAngle) <= 1 ? 0: Math.toRadians(diffAngle * kP);
-  }
-
-
-  public Translation2d getVelocity() {
-    ChassisSpeeds speeds = getChassisSpeeds();
-    return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-  }
-
-  public double getMoveVelocity() {
-    return getVelocity().getNorm();
-  }
-
-  public ChassisSpeeds getChassisSpeeds() {
-    return KINEMATICS.toChassisSpeeds(getModuleStates());
-  }
-
-  /**
-   * Sets the neutral mode of every motor in the chassis
-   * 
-   * @param mode
-   */
-  public void setBrake(boolean brake) {
-    Arrays.stream(modules).forEach((module) -> module.setBrake(brake));
-  }
-
-
-  /**
-   * Returns the angle of the gyro
-   */
-  public Rotation2d getRawAngle() {
-    return Rotation2d.fromDegrees(-1*gyro.getAngle());
-  }
-  public Rotation2d getAngle() {
-    return getPose().getRotation();
-  }
-
-  public void setOdometryToForward() {
-    poseEstimator.resetPosition(getRawAngle(), getModulePositions(),
-        new Pose2d(poseEstimator.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(0)));
-  }
-
-  /**
-   * Returns the position of every module
-   * 
-   * @return Position relative to the field
-   */
-  public SwerveModulePosition[] getModulePositions() {
-    SwerveModulePosition[] res = new SwerveModulePosition[modules.length];
-    for (int i = 0; i < modules.length; i++) {
-      res[i] = modules[i].getModulePosition();
-    }
-    return res;
-  }
-
-  /**
-   * Returns the state of every module
-   * 
-   * 
-   * @return Velocity in m/s, angle in Rotation2d
-   */
-  public SwerveModuleState[] getModuleStates() {
-    SwerveModuleState[] res = new SwerveModuleState[modules.length];
-    for (int i = 0; i < modules.length; i++) {
-      res[i] = modules[i].getState();
-    }
-    return res;
-  }
-
-
-  
-  public double getPoseX(){
-    return getPose().getX();
-  }
-  public double getPoseY(){
-    return getPose().getY();
-  }
-
-  /**
-   * Sets the state of every module
-   * 
-   * @param states Velocity in m/s, angle in Rotation2d
-   */
-  public void setModuleStates(SwerveModuleState[] states) {
-    for (int i = 0; i < states.length; i++) {
-      modules[i].setState(states[i]);
-    }
-  }
-
-  public void setModulesSteerPosition(Rotation2d angle, int i) {
-    modules[i].setSteerPosition(angle.getRotations());
-
-  }
-
-  public void setModulesSteervelocity(double speed, int i) {
-    modules[i].setSteerVelocity(speed);
-  }
-
-  public SwerveDrivePoseEstimator getSwerveDrivePoseEstimator(){
-    return this.poseEstimator;
-  }
-
-  public Pose2d getPose() {
-    return poseEstimator.getEstimatedPosition();
-  }
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-//    builder.addDoubleProperty("velocity", () -> getVelocity().getNorm(), null);
-//    builder.addDoubleProperty("Omega", () -> Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond), null);
-//    builder.addDoubleProperty("Angle", () -> Utils.degrees(getAngle()), null);
-    LogManager.addEntry("chassis/gyro", gyro::getYaw);
-    LogManager.addEntry("chassis/poseX", this::getPoseX);
-    LogManager.addEntry("chassis/poseY", this::getPoseY);
-  }
-  public void setModulesAngleFromSB(double angle) {;
-    Rotation2d a = Rotation2d.fromDegrees(angle);
-    for (SwerveModule module : modules) {
-      module.setSteerPosition(a.getRotations());
-    }
-  }
-
-
-  public double getGyroRate() {
-    return gyro.getRate();
-  }
-
-  /*private Pose2d mergeVisionOdometry(Pose2d odometry, Pose2d vision){
-    odometry = odometry.times(0.7);
-    vision = vision.times(0.3);
-    
-   
-    Pose2d result = new Pose2d(odometry.getX() + vision.getX(),
-      odometry.getY() + vision.getY(),
-      odometry.getRotation().plus(vision.getRotation()));
-
-    return result;
-  }*/
-
-
-  public void setAutoIntake(boolean isAutoIntake) {
-    this.isAutoIntake = isAutoIntake;  
-  }
-  public boolean isAutoIntake() {
-    return isAutoIntake;
-  }
-
-  public void updateVisionPose(Pose2d pose) {
-    poseEstimator.addVisionMeasurement(pose, Timer.getFPGATimestamp() - 0.05);
-  }
-  /*private Pose2d filterVisionWithOdometry(Pose2d vision, Pose2d odometry){
-    double maxAngleDiff = 50;
-    double maxDistanceDiff = 2;
-    Pose2d diff = vision;
-    if(vision.minus(odometry).getT >= )
-  }*/
-
-  @Override
-  public void periodic() {
-
-    poseEstimator.update(getRawAngle(), getModulePositions());
-   
-    field.setRobotPose(getPose().plus(new Transform2d(0, 0, new Rotation2d())));
- }
 }

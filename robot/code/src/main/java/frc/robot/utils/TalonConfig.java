@@ -20,12 +20,13 @@ public class TalonConfig {
     public closeLoopParam pid; // close loop argument - PID + FF
     public closeLoopParam pid1 = null; // pid for slot 1
     public closeLoopParam pid2 = null; // pid for slot 2
-    public double motionMagicAccel = 10; // maximum motion magic (position) acceleration
+    public double motionMagicAccel = 1; // maximum motion magic (position) acceleration
     public double motionMagicVelocity = 1; // maximum motition magic velocity
-    public double motionMagicJerk = 10;    // maximum motion magic jerk
+    public double motionMagicJerk = 0;    // maximum motion magic jerk
     public double kv2 = 0;
-    public double ksin = 0;
+    public double kSin = 0;
     public double posToRad = 0;
+
 
     /** 
     * Class to hold closed loop param
@@ -124,6 +125,16 @@ public class TalonConfig {
         return this;
     }
 
+    public TalonConfig withMeterMotor(double circonference) {
+        this.motorRatio *= 1 / circonference;
+        return this;
+    }
+
+    public TalonConfig withRadiansMotor() {
+        this.motorRatio *= 1 / (Math.PI * 2);
+        return this;
+    }
+
     /** 
      * @param kv2
      * @param ksin
@@ -132,7 +143,7 @@ public class TalonConfig {
      */
     public TalonConfig withFeedForward(double kv2, double ksin, double posToRad) {
         this.kv2 = kv2;
-        this.ksin = ksin;
+        this.kSin = ksin;
         this.posToRad = posToRad;
         return this;
     }

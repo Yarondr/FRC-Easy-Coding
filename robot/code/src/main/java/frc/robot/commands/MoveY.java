@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.chassis.subsystems.Chassis;
 
@@ -9,6 +10,7 @@ public class MoveY extends Command {
   Chassis chassis;
   double dis;
   double startingPos;
+  Timer timer;
 
   /**
    * move the chassis relative angle
@@ -18,25 +20,30 @@ public class MoveY extends Command {
   public MoveY(Chassis chassis, double dis) {
     this.chassis = chassis;
     this.dis = dis;
+    timer = new Timer();
   }
 
   @Override
   public void initialize() {
-    startingPos = chassis.getPoseY();
+    timer.start();
+    // startingPos = chassis.getPoseY();
   }
 
   @Override
   public void execute() {
-    chassis.setVelocitiesRobotRel(new ChassisSpeeds(0, dis >= 0 ? 0.25 : -0.25, 0));
+    chassis.setVelocities(new ChassisSpeeds(0, dis >= 0 ? 0.25 : -0.25 , 0));
   }
 
   @Override
   public void end(boolean interrupted) {
-    chassis.stop();
+    chassis.setVelocities(new ChassisSpeeds());
+    timer.stop();
+    timer.reset();
   }
 
   @Override
   public boolean isFinished() {
-    return Math.abs(chassis.getPoseY() - startingPos) >= Math.abs(dis);
+    return timer.hasElapsed(Math.abs(dis) * 4);
+    // return Math.abs(chassis.getPoseY() - startingPos) >= Math.abs(dis);
   }
 }

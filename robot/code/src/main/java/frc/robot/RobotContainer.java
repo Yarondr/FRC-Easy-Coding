@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.chassis.commands.DriveCommand;
 import frc.robot.chassis.subsystems.Chassis;
 import frc.robot.utils.LogManager;
 import frc.robot.commands.MoveY;
@@ -38,6 +40,7 @@ public class RobotContainer implements Sendable{
     DriverStation.startDataLog(DataLogManager.getLog());
 
     chassis = new Chassis();
+    // chassis.setDefaultCommand(new DriveCommand(chassis, new CommandXboxController(0)));
     // Configure the button bindings
 
     SmartDashboard.putData(this);
@@ -52,26 +55,29 @@ public class RobotContainer implements Sendable{
    */
   private void configureButtonBindings() {}
 
-  public void isRed(boolean isRed) {
+  public static void isRed(boolean isRed) {
     RobotContainer.isRed = isRed;
   }
-  public boolean isRed() {
+  public static boolean isRed() {
     return isRed;
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    builder.addBooleanProperty("is Red",this::isRed, this::isRed);
+    builder.addBooleanProperty("is Red", RobotContainer::isRed, RobotContainer::isRed);
   }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
-   * @return the command to run in autonomous
+			return new MoveX(chassis, 1.0);   * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+		
 
         /*Auto genereted*/
-        return null;
-  }
+        return new MoveX(chassis, 1.0)
+        .andThen(new MoveX(chassis, -1.0))
+        .andThen(new Turn(chassis, 90.0 * Math.PI / 180))
+				.andThen(new Turn(chassis, -90.0 * Math.PI / 180));  }
 }
