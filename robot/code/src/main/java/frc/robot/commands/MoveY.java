@@ -43,7 +43,7 @@ public class MoveY extends Command {
 
   @Override
   public boolean isFinished() {
-    return timer.hasElapsed(Math.abs(dis) * 4);
+    return timer.hasElapsed(Math.abs(dis) * 2);
     // return Math.abs(chassis.getPoseY() - startingPos) >= Math.abs(dis);
   }
 }

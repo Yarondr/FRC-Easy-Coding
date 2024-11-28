@@ -43,7 +43,7 @@ public class MoveX extends Command {
 
   @Override
   public boolean isFinished() {
-    return timer.hasElapsed(Math.abs(dis) * 4);
+    return timer.hasElapsed(Math.abs(dis) * 2);
     // return Math.abs(chassis.get - startingPos) >= Math.abs(dis);
   }
 }
