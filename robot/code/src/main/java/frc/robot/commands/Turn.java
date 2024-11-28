@@ -6,7 +6,7 @@ import frc.robot.chassis.subsystems.Chassis;
 
 public class Turn extends Command {
 
-  Chassis chassis;
+  frc.robot.chassis.subsystems.Chassis chassis;
   double angle;
   double startingAngle;
 
@@ -22,21 +22,21 @@ public class Turn extends Command {
 
   @Override
   public void initialize() {
-    startingAngle = chassis.getAngle().getRadians();
+    startingAngle = chassis.getGyroRotation().getRadians();
   }
 
   @Override
   public void execute() {
-    chassis.setVelocitiesRobotRel(new ChassisSpeeds(0, 0, angle >= 0 ? Math.PI / 2 : -1 * Math.PI / 2));
+    chassis.setVelocities(new ChassisSpeeds(0, 0, angle >= 0 ? Math.PI / 4 : -1 * Math.PI / 4));
   }
 
   @Override
   public void end(boolean interrupted) {
-    chassis.stop();
+    chassis.setVelocities(new ChassisSpeeds());
   }
 
   @Override
   public boolean isFinished() {
-    return Math.abs(chassis.getAngle().getRadians() - startingAngle) >= angle;
+    return Math.abs(chassis.getGyroRotation().getRadians() - startingAngle) >= Math.abs(angle);
   }
 }
