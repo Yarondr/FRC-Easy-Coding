@@ -7,7 +7,7 @@ def build_code(main_widget: QWidget, jdk_path):
     status_label: QLabel = main_widget.status_text
     status_label.setText("Building...")
     status_label.repaint()
-    command = '.\gradlew build -PteamNumber=5635 --offline -Dorg.gradle.java.home=' + jdk_path
+    command = '.\gradlew build -PteamNumber=5635 -Dorg.gradle.java.home=' + jdk_path
     args = command.split(" ")
     output = subprocess.run(args, shell=True, capture_output=True, cwd="robot/code")
     if output.returncode == 0:
@@ -17,6 +17,7 @@ def build_code(main_widget: QWidget, jdk_path):
         return True
     else:
         status_label.setText("Build failed!")
+        print(str(output.stderr))
         return False
     
 def deploy_code(main_widget: QWidget, jdk_path):
@@ -30,6 +31,7 @@ def deploy_code(main_widget: QWidget, jdk_path):
         status_label.setText("Deployment successful!")
     else:
         status_label.setText("Deployment failed! Check connection to robot.")
+        print(output.stderr)
     
 def get_wpilib_jdk_path():
     wpilib_path = r'C:\Users\Public\wpilib'
