@@ -35,7 +35,7 @@ def deploy_code(main_widget: QWidget, jdk_path):
     
 def get_wpilib_jdk_path():
     wpilib_path = r'C:\Users\Public\wpilib'
-    version = 2024
+    version = 2025
     for file in os.listdir(wpilib_path):
         path = os.path.join(wpilib_path, file)
         if os.path.isdir(path) and file.isdigit():
