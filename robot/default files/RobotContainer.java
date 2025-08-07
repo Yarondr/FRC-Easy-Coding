@@ -226,6 +226,8 @@ public class RobotContainer implements Sendable {
     return new FollowTrajectory(chassis, new ArrayList<>() {
       {
         add(PathPoint.kZero);
+        /* START OF AUTO GENERETED CODE */
+        /* END OF AUTO GENERETED CODE */
       }
     }, Rotation2d.kZero);
   }
