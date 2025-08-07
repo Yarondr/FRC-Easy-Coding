@@ -48,7 +48,7 @@ class CodeScreen(QWidget):
         # window properties
         self.setWindowIcon(QIcon("icons/icon.png"))
         self.setWindowTitle("Robot Coding")
-        self.setGeometry(0, 0, 1380, 820)
+        self.setGeometry(0, 0, 1920, 1080)
         self.setStyleSheet("background-color: #b3e5fc;")
         center_widget(self)
         
