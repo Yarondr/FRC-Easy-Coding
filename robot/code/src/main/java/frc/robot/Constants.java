@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.CANBus;
+
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -13,17 +17,19 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final String CANBUS = "rio";
-    // public static final int LEFT_FRONT_PORT = 3; 
-    // public static final int LEFT_BACK_PORT = 4; 
-    // public static final int RIGHT_FRONT_PORT = 1; 
-    // public static final int RIGHT_BACK_PORT = 2; 
 
-    // public static final int GYRO_PORT = 14;
+  public static final class CANBuses {
+    public static final CANBus ARM_CAN_BUS = new CANBus("rio");
+    public static final CANBus CHASSIS_CAN_BUS = new CANBus("canivore");
+  }
 
-    // public static final double KS = 0.03698 * 12;
-    // public static final double KV = 0.2386 * 12;
-    // public static final double KP = 0.00005;
-
-    // public static final double PULSES_PER_METER = 51330;
+  public static final class PowerDistributionConstants {
+    public static final ModuleType MODULE_TYPE = ModuleType.kRev;
+    public static final int POWER_DISTRIBUTION_ID = 16;
+  }
+  
+  public static final class OperatorConstants {
+    public static final int DRIVER_CONTROLLER_PORT = 0;
+    public static final int OPERATOR_CONTROLLER_PORT = 1;
+  }
 }

@@ -1,146 +1,116 @@
 package frc.robot.chassis.subsystems;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.chassis.SwerveConstants.SwerveModuleConstants;
+import frc.robot.chassis.utils.ChassisConstants.SwerveModuleConfigs;
 import frc.robot.utils.Cancoder;
 import frc.robot.utils.TalonMotor;
 
-/**
- * Represents a single swerve drive module with drive and steer motors
- */
-public class SwerveModule extends SubsystemBase {
-    // Motor and sensor components
-    private final TalonMotor driveMotor;
-    private final TalonMotor steerMotor;
-    private final Cancoder canCoder;
-    
-    // Angle offset for precise positioning
-    private final double steerOffset;
-    
-    
-    // Module name for identification
-    private final String moduleName;
+public class SwerveModule {
+    private TalonMotor steerMotor;
+    private TalonMotor driveMotor;
+    private Cancoder cancoder;
+    public String name;
 
-    /**
-     * Constructor for SwerveModule
-     * @param constants Module-specific configuration constants
-     * @param chassis Parent chassis subsystem
-     */
-    public SwerveModule(SwerveModuleConstants constants) {
-        this.moduleName = constants.name;
+    public SwerveModule(SwerveModuleConfigs configs) {
+        steerMotor = new TalonMotor(configs.STEER_CONFIG);
+        driveMotor = new TalonMotor(configs.DRIVE_CONFIG);
+        cancoder = new Cancoder(configs.CANCODER_CONFIG);
+        name = configs.NAME;
 
-        // Initialize motors and sensors
-        driveMotor = new TalonMotor(constants.driveConfig);
-        steerMotor = new TalonMotor(constants.steerConfig);
-        canCoder = new Cancoder(constants.cancoderConfig);
-
-        // Set angle offset
-        steerOffset = constants.steerOffset;
+        steerMotor.setPosition(getAbsoluteAngle() - configs.STEER_OFFSET);
         
-        // Initialize motor positions
-        driveMotor.setPosition(0);
-        steerMotor.setPosition(getAbsoluteAngle() + steerOffset);
-
-        // Add to SmartDashboard for debugging
-        SmartDashboard.putData(moduleName, this);
+        // SmartDashboard.putData(configs.DRIVE_CONFIG.name, driveMotor);
+        // SmartDashboard.putData(configs.STEER_CONFIG.name, steerMotor);
     }
 
-    @Override
-    public void periodic() {
-        // Optional periodic update logic
-        updateSmartDashboard();
+    public void checkElectronics() {
+        driveMotor.checkElectronics();
+        steerMotor.checkElectronics();
+        cancoder.checkElectronics();
     }
 
-    /**
-     * Get absolute angle from CANCoder
-     * @return Absolute angle in radians
-     */
+    public void setNeutralMode(boolean isBrake) {
+        driveMotor.setNeutralMode(isBrake);
+        steerMotor.setNeutralMode(isBrake);
+    }
+
+    public void setSteerPower(double power) {
+        steerMotor.set(power);
+    }
+
     public double getAbsoluteAngle() {
-        return canCoder.getAbsPositionRadians();
+        return cancoder.getCurrentAbsPosition();
     }
 
-    /**
-     * Get current steer motor angle
-     * @return Steer angle in radians
-     */
+    public void setDrivePower(double power) {
+        driveMotor.set(power);
+    }
+
+    public void setSteerVelocity(double velocityRadsPerSecond) {
+        steerMotor.setVelocity(velocityRadsPerSecond);
+    }
+
+    public void setDriveVelocity(double velocityMetersPerSecond) {
+        driveMotor.setVelocity(velocityMetersPerSecond);
+    }
+
+    public void setSteerPosition(double positionRadians) {
+        steerMotor.setPositionVoltage(positionRadians);
+        // steerMotor.setMotionMagic(positionRadians);
+    }
+
     public double getSteerAngle() {
         return steerMotor.getCurrentPosition();
     }
-
-    /**
-     * Get steer angle as Rotation2d
-     * @return Steer angle as Rotation2d
-     */
-    public Rotation2d getSteerAngleRotation2D() {
-        return Rotation2d.fromRadians(getSteerAngle());
+    public Rotation2d getSteerRotation() {
+        return new Rotation2d(getSteerAngle());
+    }
+    public double getSteerVel() {
+        return steerMotor.getCurrentVelocity();
+    }
+    public double getSteerAccel() {
+        return steerMotor.getAcceleration().getValueAsDouble();
     }
 
-    /**
-     * Get current drive motor velocity
-     * @return Velocity in meters per second
-     */
-    public double getVelocity() {
+    public double getDriveVel() {
         return driveMotor.getCurrentVelocity();
     }
 
-    /**
-     * Set steer motor angle
-     * @param pos Desired angle as Rotation2d
-     */
-    public void setSteerAngle(Rotation2d pos) {
-        steerMotor.setMotionMagic(pos.getRadians());
+    public void setState(SwerveModuleState state) {
+        double wantedAngle = state.angle.getRadians();
+        double diff = wantedAngle - steerMotor.getCurrentPosition();
+        double vel = state.speedMetersPerSecond;
+        diff = MathUtil.angleModulus(diff);
+        if(diff > 0.5 * Math.PI) {
+            vel = -vel;
+            diff = diff-Math.PI;
+        } else if(diff < -0.5 * Math.PI) {
+            vel = -vel;
+            diff = diff + Math.PI;
+        }
+
+        setSteerPosition(steerMotor.getCurrentPosition() + diff);
+        setDriveVelocity(vel);
+    }
+
+    public SwerveModulePosition getModulePosition() {
+        return new SwerveModulePosition(driveMotor.getCurrentPosition(), Rotation2d.fromRadians(steerMotor.getCurrentPosition()));
     }
 
     /**
-     * Set drive motor velocity
-     * @param velocity Desired velocity in meters per second
-     */
-    public void setVelocity(double velocity) {
-        driveMotor.setVelocity(velocity);
-    }
-
-    /**
-     * Get current module state
-     * @return SwerveModuleState with velocity and angle
+     * Returns the state of the module
+     * @return Velocity in m/s
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(getVelocity(), getSteerAngleRotation2D());
+        return new SwerveModuleState(getDriveVel(), getSteerRotation());
     }
 
-    /**
-     * Set module state with angle optimization
-     * @param state Desired module state
-     */
-    public void setState(SwerveModuleState state) {
-        // Optimize module state to minimize rotation
-        SwerveModuleState optimized = SwerveModuleState.optimize(state, getSteerAngleRotation2D());
-        
-        // Set steer angle and velocity
-        setSteerAngle(optimized.angle);
-        setVelocity(optimized.speedMetersPerSecond);
-    }
 
-    /**
-     * Get current module position
-     * @return SwerveModulePosition with distance and angle
-     */
-    public SwerveModulePosition getModulePosition() {
-        return new SwerveModulePosition(
-            driveMotor.getCurrentPosition(), 
-            getSteerAngleRotation2D()
-        );
-    }
-
-    /**
-     * Update SmartDashboard with module telemetry
-     */
-    private void updateSmartDashboard() {
-        SmartDashboard.putNumber(moduleName + " Absolute Angle", getAbsoluteAngle());
-        SmartDashboard.putNumber(moduleName + " Steer Angle", getSteerAngle());
-        SmartDashboard.putNumber(moduleName + " Velocity", getVelocity());
+    public void stop() {
+        steerMotor.stopMotor();
+        driveMotor.stopMotor();
     }
 }
