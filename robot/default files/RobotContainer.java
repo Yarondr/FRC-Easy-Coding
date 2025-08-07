@@ -33,14 +33,16 @@ import frc.robot.utils.Elastic.Notification;
 import frc.robot.utils.Elastic.Notification.NotificationLevel;
 import frc.robot.utils.LogManager;
 
-
 /**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * This class is where the bulk of the robot should be declared. Since
+ * Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in
+ * the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of
+ * the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
-public class RobotContainer implements Sendable{
+public class RobotContainer implements Sendable {
 
   public static RobotContainer robotContainer;
   public static CommandController driverController;
@@ -50,12 +52,14 @@ public class RobotContainer implements Sendable{
   public static boolean isRed;
   public static Trigger allianceTrigger;
 
-  public static Chassis chassis;  
-  
+  public static Chassis chassis;
+
   public SendableChooser<AutoMode> autoChooser;
+
   public enum AutoMode {
     LEFT, MIDDLE, RIGHT
   }
+
   public static Command leftAuto;
   public static Command middleAuto;
   public static Command rightAuto;
@@ -63,7 +67,9 @@ public class RobotContainer implements Sendable{
 
   private Trigger userButtonTrigger;
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
     // WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
     robotContainer = this;
@@ -74,16 +80,16 @@ public class RobotContainer implements Sendable{
 
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     SmartDashboard.putData("RC", this);
-    LogManager.addEntry("Timer", ()-> DriverStation.getMatchTime());
+    LogManager.addEntry("Timer", () -> DriverStation.getMatchTime());
     Elastic.sendNotification(new Notification(NotificationLevel.INFO, "Start Robot Code", ""));
-    
+
     configureSubsytems();
     configureDefaultCommands();
     configureBindings();
     configureAuto();
 
-    allianceTrigger.onChange(new InstantCommand(() -> {}
-    ).ignoringDisable(true));
+    allianceTrigger.onChange(new InstantCommand(() -> {
+    }).ignoringDisable(true));
   }
 
   /**
@@ -112,19 +118,20 @@ public class RobotContainer implements Sendable{
 
     driverController.getLeftStickMove().onTrue(new Drive(chassis, driverController));
 
-    driverController.rightButton().onTrue(new InstantCommand(()-> Drive.invertPrecisionMode()));
-    
-    driverController.leftBumper().onTrue(new InstantCommand(()-> {
+    driverController.rightButton().onTrue(new InstantCommand(() -> Drive.invertPrecisionMode()));
+
+    driverController.leftBumper().onTrue(new InstantCommand(() -> {
       chassis.stop();
     }, chassis).ignoringDisable(true));
-    
-    operatorController.leftBumper().onTrue(new InstantCommand(()-> {
+
+    operatorController.leftBumper().onTrue(new InstantCommand(() -> {
       chassis.stop();
     }, chassis).ignoringDisable(true));
 
     operatorController.povDown().onTrue(new InstantCommand(chassis::stop, chassis).ignoringDisable(true));
 
-    operatorController.leftSettings().onTrue(new InstantCommand(()-> chassis.setYaw(Rotation2d.kPi)).ignoringDisable(true));
+    operatorController.leftSettings()
+        .onTrue(new InstantCommand(() -> chassis.setYaw(Rotation2d.kPi)).ignoringDisable(true));
   }
 
   private void configureAuto() {
@@ -144,7 +151,7 @@ public class RobotContainer implements Sendable{
 
   public static void setIsComp(boolean isComp) {
     RobotContainer.isComp = isComp;
-    if(!hasRemovedFromLog && isComp) {
+    if (!hasRemovedFromLog && isComp) {
       hasRemovedFromLog = true;
       LogManager.removeInComp();
     }
@@ -159,6 +166,7 @@ public class RobotContainer implements Sendable{
   /**
    * This command is schedules at the start of teleop.
    * Look in {@link Robot} for more details.
+   * 
    * @return the ommand that start at the start at enable
    */
   public Command getEnableInitCommand() {
@@ -167,23 +175,49 @@ public class RobotContainer implements Sendable{
 
   /**
    * This command is schedules at the start of disable.
-   * Put here all the stop functions of all the subsytems and then add them to the requirments
-   * This insures that the motors do not keep their last control mode earlier and moves uncontrollably.
+   * Put here all the stop functions of all the subsytems and then add them to the
+   * requirments
+   * This insures that the motors do not keep their last control mode earlier and
+   * moves uncontrollably.
    * Look in {@link Robot} for more details.
+   * 
    * @return the command that runs at disable
    */
   public Command getDisableInitCommand() {
-    return new InstantCommand(()-> {
+    return new InstantCommand(() -> {
       chassis.stop();
       timer.stop();
-    }, chassis
-    ).withName("initDisableCommand").ignoringDisable(true);
+    }, chassis).withName("initDisableCommand").ignoringDisable(true);
+  }
+
+  PathPoint makePointX(double x) {
+    return new PathPoint(
+        new Pose2d(chassis.getPose().getTranslation().plus(new Translation2d(x, 0)), chassis.getGyroAngle()));
+  }
+
+  PathPoint makePointTurn(double radAngle) {
+    return new PathPoint(
+      new Pose2d(chassis.getPose().getTranslation(), Rotation2d.fromRadians(radAngle))
+    );
   }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
+   *         {@code
+   *  public Command getAutonomousCommand() {
+   *    timer.reset();
+   *    timer.start();
+   * 
+   *    return new FollowTrajectory(chassis, new ArrayList<>() {
+   *      {
+   *        add(PathPoint.kZero);
+            add(makePointX(1));
+            add(makePointTurn(Math.PI / 2))
+   *         }
+   *         }, Rotation2d.kZero);
+   *         }
    */
   public Command getAutonomousCommand() {
     timer.reset();

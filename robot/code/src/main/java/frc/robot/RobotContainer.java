@@ -190,6 +190,17 @@ public class RobotContainer implements Sendable {
     }, chassis).withName("initDisableCommand").ignoringDisable(true);
   }
 
+  PathPoint makePointX(double x) {
+    return new PathPoint(
+        new Pose2d(chassis.getPose().getTranslation().plus(new Translation2d(x, 0)), chassis.getGyroAngle()));
+  }
+
+  PathPoint makePointTurn(double radAngle) {
+    return new PathPoint(
+      new Pose2d(chassis.getPose().getTranslation(), Rotation2d.fromRadians(radAngle))
+    );
+  }
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -202,7 +213,8 @@ public class RobotContainer implements Sendable {
    *    return new FollowTrajectory(chassis, new ArrayList<>() {
    *      {
    *        add(PathPoint.kZero);
-   *        add(new PathPoint(new Pose2d(chassis.getPose().getTranslation().plus(new Translation2d(1, 1)), chassis.getGyroAngle())));
+            add(makePointX(1));
+            add(makePointTurn(Math.PI / 2))
    *         }
    *         }, Rotation2d.kZero);
    *         }
@@ -216,16 +228,5 @@ public class RobotContainer implements Sendable {
         add(PathPoint.kZero);
       }
     }, Rotation2d.kZero);
-  }
-
-  PathPoint makePointX(double x) {
-    return new PathPoint(
-        new Pose2d(chassis.getPose().getTranslation().plus(new Translation2d(x, 0)), chassis.getGyroAngle()));
-  }
-
-  PathPoint makePointTurn(double radAngle) {
-    return new PathPoint(
-      new Pose2d(chassis.getPose().getTranslation(), Rotation2d.fromRadians(radAngle))
-    );
   }
 }
