@@ -14,7 +14,7 @@ def wrap_commands_to_java(commands: list[Tuple[Commands, int]]):
                           for command, value in commands)
     java_code : str = ""
     for i in java_commands_list:
-        java_code += "\t\t\t\t" + java_commands_list + "\n"
+        java_code += "\t\t\t\t" + i + "\n"
 
     # match len(java_commands_list):
     #     case 0:
